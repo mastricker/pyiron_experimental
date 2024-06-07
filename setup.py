@@ -7,7 +7,7 @@ import versioneer
 
 setup(
     name='pyiron_experimental',
-    version=versioneer.get_version(),
+    #version=versioneer.get_version(),
     description='Repository for experimental plugins to the pyiron IDE.',
     long_description='http://pyiron.org',
 
@@ -33,12 +33,12 @@ setup(
     keywords='pyiron',
     packages=find_packages(exclude=["*tests*"]),
     install_requires=[
-        'pyiron_base==0.5.29',
-        'matplotlib==3.6.2',
-        'temmeta==0.0.6',
-        'pystem==0.0.26',
-        'hyperspy==1.7.3',
-        'scanf==1.5.2',
+        # 'pyiron_base==0.5.29',
+        # 'matplotlib==3.6.2',
+        # 'temmeta==0.0.6',
+        # 'pystem==0.0.26',
+        # 'hyperspy==1.7.3',
+        # 'scanf==1.5.2',
     ],
     cmdclass=versioneer.get_cmdclass(),
 )

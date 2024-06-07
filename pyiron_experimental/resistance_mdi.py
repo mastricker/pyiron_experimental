@@ -6,14 +6,14 @@ Template class to define jobs
 """
 
 # from pyiron_base.jobs.job.template (if not installed experimental)
-from pyiron_base.job.template import TemplateJob
+from pyiron_base.jobs.job.template import PythonTemplateJob
 from autonoexp.measurement_devices import Resistance
 import autonoexp.gaussian_process as gp
 
 import numpy as np
 
 
-class ResistanceGP(TemplateJob):
+class ResistanceGP(PythonTemplateJob):
     def __init__(self, project, job_name):
         super().__init__(project, job_name)
         self._python_only_job = True
@@ -38,7 +38,7 @@ class ResistanceGP(TemplateJob):
     #     self.output['crystal_structure'] = cs
 
     def run_static(self):
-        self.device = Resistance(self.input.sample_file,
+        self.device = Resistance(self.input.sample_file, # todo(markus) change to DataFrame
                                  self.input.element_column_ids)
 
         X0, y0 = self.device.get_initial_measurement(
