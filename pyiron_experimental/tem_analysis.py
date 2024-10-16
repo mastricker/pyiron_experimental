@@ -39,16 +39,16 @@ class HSLineProfiles(GenericJob):
         self._n_lines = -1
         self._line_profiles = {}
         self._active_selector = None
-        self._storage = DataContainer(table_name='storage')
-        _input = self._storage.create_group('input')
-        _input.create_group('lines')
-        _input['x'] = []
-        _input['y'] = []
-        _input['lw'] = []
-        _input.create_group('signal')
+        self._storage = DataContainer(table_name="storage")
+        _input = self._storage.create_group("input")
+        _input.create_group("lines")
+        _input["x"] = []
+        _input["y"] = []
+        _input["lw"] = []
+        _input.create_group("signal")
         _input.signal.hs_class_name = None
-        self._storage.create_group('output')
-        self._storage.create_group('_control')
+        self._storage.create_group("output")
+        self._storage.create_group("_control")
 
     @property
     def hs(self):
@@ -56,7 +56,9 @@ class HSLineProfiles(GenericJob):
 
     def validate_ready_to_run(self):
         if self._signal is None:
-            raise ValueError("signal is not defined! Define a signal for which the HSLineProfiles are computed.")
+            raise ValueError(
+                "signal is not defined! Define a signal for which the HSLineProfiles are computed."
+            )
         self._validate_and_prepare_input_run_static()
 
     @property
@@ -74,7 +76,7 @@ class HSLineProfiles(GenericJob):
     @signal.setter
     def signal(self, new_signal):
         if not isinstance(new_signal, hs.hyperspy.signal.BaseSignal):
-            raise ValueError('The signal has to have be hyperspy signal!')
+            raise ValueError("The signal has to have be hyperspy signal!")
         if not self.status.initialized:
             raise RuntimeError("Signal cannot be changed for a started job.")
         self._signal = new_signal
@@ -82,31 +84,48 @@ class HSLineProfiles(GenericJob):
         self.input.signal.data = new_signal.data
         self.input.signal.axes = list(new_signal.axes_manager.as_dictionary().values())
         self.input.signal.metadata = new_signal.metadata.as_dictionary()
-        self.input.signal.original_metadata = new_signal.original_metadata.as_dictionary()
+        self.input.signal.original_metadata = (
+            new_signal.original_metadata.as_dictionary()
+        )
 
     def to_hdf(self, hdf=None, group_name=None):
         super(HSLineProfiles, self).to_hdf()
-        self._storage._control['useblit'] = self._useblit
+        self._storage._control["useblit"] = self._useblit
         self._storage.to_hdf(hdf=self._hdf5)
 
     def from_hdf(self, hdf=None, group_name=None):
         super(HSLineProfiles, self).from_hdf()
         self._storage.from_hdf(hdf=self._hdf5)
-        self._useblit = self._storage._control['useblit']
+        self._useblit = self._storage._control["useblit"]
         if self.input.signal.hs_class_name is not None:
             _signal_class = getattr(hs.signals, self.input.signal.hs_class_name)
             _data = self.input.signal.data
             _axes = self.input.signal.axes
             _metadata = self.input.signal.metadata
             _original_metadata = self.input.signal.original_metadata
-            self._signal = _signal_class(_data, axes=_axes, metadata=_metadata, original_metadata=_original_metadata)
-            for line, x, y, lw in zip(self.input.lines, self.input.x, self.input.y, self.input.lw):
+            self._signal = _signal_class(
+                _data,
+                axes=_axes,
+                metadata=_metadata,
+                original_metadata=_original_metadata,
+            )
+            for line, x, y, lw in zip(
+                self.input.lines, self.input.x, self.input.y, self.input.lw
+            ):
                 line_dict = self.input.lines[line]
-                if line_dict['lw'] is not None and line_dict['lw'] != lw:
-                    raise ValueError(f"Implementation error: line width from input.lines[lw]={line_dict['lw']}"
-                                     f" and input.lw={lw} differ.")
-                self._add_line(x=x, y=y, lw=lw, line_properties=line_dict['lin_prop'],
-                               line_number=line_dict['line'], append_input=False)
+                if line_dict["lw"] is not None and line_dict["lw"] != lw:
+                    raise ValueError(
+                        f"Implementation error: line width from input.lines[lw]={line_dict['lw']}"
+                        f" and input.lw={lw} differ."
+                    )
+                self._add_line(
+                    x=x,
+                    y=y,
+                    lw=lw,
+                    line_properties=line_dict["lin_prop"],
+                    line_number=line_dict["line"],
+                    append_input=False,
+                )
             self._n_lines = max(self._line_profiles.keys())
 
     def plot_signal(self, ax=None):
@@ -160,7 +179,9 @@ class HSLineProfiles(GenericJob):
         elif isinstance(line, int):
             lines = [line]
         else:
-            raise ValueError(f"'{line}' is not a valid description to select (a) line(s) to be removed.")
+            raise ValueError(
+                f"'{line}' is not a valid description to select (a) line(s) to be removed."
+            )
 
         for line in lines:
             self._line_profiles[line].remove_roi_selection()
@@ -173,11 +194,15 @@ class HSLineProfiles(GenericJob):
             line_properties = dict(color=f"C{self._n_lines + 1}")
         valid = self._validate_and_prepare_input_run_static(fail=False)
         if valid is not True:
-            raise ValueError(f"Prior defined input is not valid: \n {valid[0].args}") from valid[0]
+            raise ValueError(
+                f"Prior defined input is not valid: \n {valid[0].args}"
+            ) from valid[0]
         self._add_line(x, y, lw, line_properties)
         self.active_line = self._n_lines
 
-    def _add_line(self, x, y, lw, line_properties=None, line_number=None, append_input=True):
+    def _add_line(
+        self, x, y, lw, line_properties=None, line_number=None, append_input=True
+    ):
         line_profile = LineProfile(self._signal, ax=self.ax)
         line_profile.useblit = self._useblit
         lw = lw or 5
@@ -191,9 +216,7 @@ class HSLineProfiles(GenericJob):
 
         if append_input:
             self.input.lines.append(
-                {'line': line_number,
-                 'lw': lw,
-                 'lin_prop': line_properties}
+                {"line": line_number, "lw": lw, "lin_prop": line_properties}
             )
             self.input.x.append(x)
             self.input.y.append(y)
@@ -205,12 +228,17 @@ class HSLineProfiles(GenericJob):
         else:
             fig = ax.figure
         if not self.status.finished:
-            self.run(run_mode='interactive')
-        lengths = [line_prof.line_length_px * line_prof.scale for line_prof in self._line_profiles.values()]
+            self.run(run_mode="interactive")
+        lengths = [
+            line_prof.line_length_px * line_prof.scale
+            for line_prof in self._line_profiles.values()
+        ]
         for i, profile in self._line_profiles.items():
             if profile.line_properties is None:
-                profile.line_properties = {'color': f"C{i}"}
-            profile.plot_line_profile(ax=ax, line_properties={"label": f"Line profile {i}"})
+                profile.line_properties = {"color": f"C{i}"}
+            profile.plot_line_profile(
+                ax=ax, line_properties={"label": f"Line profile {i}"}
+            )
         ax.set_xlim(0, np.max(lengths))
         return fig, ax
 
@@ -235,9 +263,7 @@ class HSLineProfiles(GenericJob):
             lines = self.input.lines
         else:
             lines = [
-                {'line': i,
-                 'lw': lw,
-                 'lin_prop': None}
+                {"line": i, "lw": lw, "lin_prop": None}
                 for i, lw in enumerate(self.input.lw)
             ]
 
@@ -272,15 +298,17 @@ class HSLineProfiles(GenericJob):
             self.input.y[i] = profile.y_in_px
             self.input.lw[i] = profile.lw_in_px
             line_prof = profile.hs_line_profile
-            self.output.append({
-                'line': key,
-                'x': self.input.x[i],
-                'y': self.input.y[i],
-                'lw': self.input.lw[i],
-                'data': line_prof.data,
-                'scale': profile.scale,
-                'unit': line_prof.axes_manager[0].units
-            })
+            self.output.append(
+                {
+                    "line": key,
+                    "x": self.input.x[i],
+                    "y": self.input.y[i],
+                    "lw": self.input.lw[i],
+                    "data": line_prof.data,
+                    "scale": profile.scale,
+                    "unit": line_prof.axes_manager[0].units,
+                }
+            )
 
     def collect_output(self):
         pass
@@ -363,7 +391,7 @@ class LineProfile:
     def line_properties(self, value):
         if not isinstance(value, dict):
             raise TypeError(f"{value} is not a dictionary")
-        if 'lw' in value or 'linewidth' in value:
+        if "lw" in value or "linewidth" in value:
             print("linewidth only affects plotting!")
         self._line_properties = value
 
@@ -395,9 +423,9 @@ class LineProfile:
             x = [xi for xi in x] if x is not None else self.x_in_px
             y = [yi for yi in y] if y is not None else self.y_in_px
         line_properties = self.line_properties
-        roi_linewidth = line_properties.pop('roi_linewidth', None)
-        if 'lw' not in line_properties and 'linewidth' not in line_properties:
-            line_properties['linewidth'] = roi_linewidth or self._lw or 5
+        roi_linewidth = line_properties.pop("roi_linewidth", None)
+        if "lw" not in line_properties and "linewidth" not in line_properties:
+            line_properties["linewidth"] = roi_linewidth or self._lw or 5
         self._selector.select_line(line_properties=line_properties, x=x, y=y)
         self.set_active(active)
 
@@ -405,14 +433,14 @@ class LineProfile:
         if line_properties is None:
             line_properties = dict(roi_linewidth=lw)
         else:
-            line_properties['roi_linewidth'] = lw
+            line_properties["roi_linewidth"] = lw
         self._lw = lw
         self._line_properties = line_properties
         self.plot_roi(x=x, y=y)
 
     def calc_roi(self, x_px=None, y_px=None, lw_px=None):
         if (x_px is None or y_px is None or lw_px is None) and self._selector is None:
-            raise RuntimeError('One parameter not provided and no active roi selector.')
+            raise RuntimeError("One parameter not provided and no active roi selector.")
         self._hs_line_profile = None
 
         scale = self.scale
@@ -452,9 +480,9 @@ class LineProfile:
         _line_properties = dict(linestyle="-", color="C1", label="Line profile")
         if self._line_properties is not None:
             _line_properties.update(self._line_properties)
-            _line_properties.pop('lw', None)
-            _line_properties.pop('linewidth', None)
-            _line_properties.pop('roi_linewidth', None)
+            _line_properties.pop("lw", None)
+            _line_properties.pop("linewidth", None)
+            _line_properties.pop("roi_linewidth", None)
         if line_properties is not None:
             _line_properties.update(line_properties)
 
@@ -463,7 +491,11 @@ class LineProfile:
             fig, ax = plt.subplots()
         else:
             fig = ax.figure
-        ax.plot(np.arange(profile.data.shape[0]) * self.scale, profile.data, **_line_properties)
+        ax.plot(
+            np.arange(profile.data.shape[0]) * self.scale,
+            profile.data,
+            **_line_properties,
+        )
 
         ax.legend()
         ax.set_yticks([])

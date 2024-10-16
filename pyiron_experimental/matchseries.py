@@ -5,39 +5,32 @@ from pyiron_base import GenericJob, GenericParameters
 
 class MatchSeries(GenericJob):
     def __init__(self, project, job_name):
-        super().__init__(project, job_name) 
+        super().__init__(project, job_name)
         self.input = MatchSeriesInput()
         self.executable = "matchSeries 2> output.log"
 
     def _copy_restart_files(self):
-        # copy images to working directory - bad shortcut ! 
-        for file in os.listdir('.'):
-            if scanf.scanf(self.input["templateNamePattern"], s=file, collapseWhitespace=True):
+        # copy images to working directory - bad shortcut !
+        for file in os.listdir("."):
+            if scanf.scanf(
+                self.input["templateNamePattern"], s=file, collapseWhitespace=True
+            ):
                 self._restart_file_list.append(file)
         super()._copy_restart_files()
-        
-    def write_input(self): 
-        self.input.write_file( 
-            file_name="matchSeries.par",
-            cwd=self.working_directory
-        )
+
+    def write_input(self):
+        self.input.write_file(file_name="matchSeries.par", cwd=self.working_directory)
 
     def collect_output(self):
         pass
-    
+
     def to_hdf(self, hdf=None, group_name=None):
-        super().to_hdf(
-            hdf=hdf,
-            group_name=group_name
-        )
+        super().to_hdf(hdf=hdf, group_name=group_name)
         with self.project_hdf5.open("input") as h5in:
             self.input.to_hdf(h5in)
 
     def from_hdf(self, hdf=None, group_name=None):
-        super().from_hdf(
-            hdf=hdf,
-            group_name=group_name
-        )
+        super().from_hdf(hdf=hdf, group_name=group_name)
         with self.project_hdf5.open("input") as h5in:
             self.input.from_hdf(h5in)
 
@@ -45,9 +38,11 @@ class MatchSeries(GenericJob):
 class MatchSeriesInput(GenericParameters):
     def __init__(self, input_file_name=None, **qwargs):
         super(MatchSeriesInput, self).__init__(
-            input_file_name=input_file_name, table_name="matchSeries_par", comment_char="#"
+            input_file_name=input_file_name,
+            table_name="matchSeries_par",
+            comment_char="#",
         )
-        
+
     def load_default(self):
         file_content = """\
 deformationModel 0

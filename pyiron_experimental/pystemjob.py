@@ -9,28 +9,28 @@ from pystem.stemsegmentation import segmentationSTEM
 class pySTEMTEMMETAJob(TemplateJob):
     def __init__(self, project, job_name):
         super(pySTEMTEMMETAJob, self).__init__(project, job_name)
-        self.input['file_name'] = ''
-        self.input['n_patterns'] = 2
-        self.input['stride'] = 5
-        self.input['descriptor_name'] = 'local_correlation_map'
-        self.input['n_PCA_components'] = 5
-        self.input['upsampling'] = True
-        self.input['preselected_translations'] = None
-        self.input['window_x'] = 21
-        self.input['window_y'] = 21
-        self.input['num_reflection_plane'] = 10
-        self.input['radius'] = 20
-        self.input['patch_x'] = 20
-        self.input['patch_y'] = 20
-        self.input['max_num_points'] = 100
-        self.input['method'] = 'direct'
-        self.input['sort_labels_by_pattern_size'] = True
-        self.input['random_state'] = None
-        self.input['separability_analysis'] = False
-        self.input['num_operations_with_best_sep'] = 5
-        self.input['one_step_kmeans'] = False
-        self.input['pca_fitted'] = None
-        self.input['kmeans_init_centers'] = None
+        self.input["file_name"] = ""
+        self.input["n_patterns"] = 2
+        self.input["stride"] = 5
+        self.input["descriptor_name"] = "local_correlation_map"
+        self.input["n_PCA_components"] = 5
+        self.input["upsampling"] = True
+        self.input["preselected_translations"] = None
+        self.input["window_x"] = 21
+        self.input["window_y"] = 21
+        self.input["num_reflection_plane"] = 10
+        self.input["radius"] = 20
+        self.input["patch_x"] = 20
+        self.input["patch_y"] = 20
+        self.input["max_num_points"] = 100
+        self.input["method"] = "direct"
+        self.input["sort_labels_by_pattern_size"] = True
+        self.input["random_state"] = None
+        self.input["separability_analysis"] = False
+        self.input["num_operations_with_best_sep"] = 5
+        self.input["one_step_kmeans"] = False
+        self.input["pca_fitted"] = None
+        self.input["kmeans_init_centers"] = None
         self._python_only_job = True
         self._image = None
         self._vec = []
@@ -38,15 +38,15 @@ class pySTEMTEMMETAJob(TemplateJob):
 
     @property
     def file_name(self):
-        return self.input['file_name']
+        return self.input["file_name"]
 
     @file_name.setter
     def file_name(self, file_name):
-        self.input['file_name'] = file_name
+        self.input["file_name"] = file_name
         self._image = self.create_tem_image()
 
     def create_tem_image(self):
-        emd1 = dio.EMDFile(self.input['file_name'])
+        emd1 = dio.EMDFile(self.input["file_name"])
         return emd1.get_dataset("Image", "6fdbde41eecc4375b45cd86bd2be17c0")
 
     def plot(self, labels=False, alpha=0.5):
@@ -59,29 +59,29 @@ class pySTEMTEMMETAJob(TemplateJob):
             else:
                 raise ValueError()
 
-    def perform_segmentation(self,image):
+    def perform_segmentation(self, image):
         seg = segmentationSTEM(
-            n_patterns=self.input['n_patterns'],
-            stride=self.input['stride'],
-            descriptor_name=self.input['descriptor_name'],
-            n_PCA_components=self.input['n_PCA_components'],
-            upsampling=self.input['upsampling'],
-            preselected_translations=self.input['preselected_translations'],
-            window_x=self.input['window_x'],
-            window_y=self.input['window_y'],
-            num_reflection_plane=self.input['num_reflection_plane'],
-            radius=self.input['radius'],
-            patch_x=self.input['patch_x'],
-            patch_y=self.input['patch_y'],
-            max_num_points=self.input['max_num_points'],
-            method=self.input['method'],
-            sort_labels_by_pattern_size=self.input['sort_labels_by_pattern_size'],
-            random_state=self.input['random_state'],
-            separability_analysis=self.input['separability_analysis'],
-            num_operations_with_best_sep=self.input['num_operations_with_best_sep'],
-            one_step_kmeans=self.input['one_step_kmeans'],
-            pca_fitted=self.input['pca_fitted'],
-            kmeans_init_centers=self.input['kmeans_init_centers']
+            n_patterns=self.input["n_patterns"],
+            stride=self.input["stride"],
+            descriptor_name=self.input["descriptor_name"],
+            n_PCA_components=self.input["n_PCA_components"],
+            upsampling=self.input["upsampling"],
+            preselected_translations=self.input["preselected_translations"],
+            window_x=self.input["window_x"],
+            window_y=self.input["window_y"],
+            num_reflection_plane=self.input["num_reflection_plane"],
+            radius=self.input["radius"],
+            patch_x=self.input["patch_x"],
+            patch_y=self.input["patch_y"],
+            max_num_points=self.input["max_num_points"],
+            method=self.input["method"],
+            sort_labels_by_pattern_size=self.input["sort_labels_by_pattern_size"],
+            random_state=self.input["random_state"],
+            separability_analysis=self.input["separability_analysis"],
+            num_operations_with_best_sep=self.input["num_operations_with_best_sep"],
+            one_step_kmeans=self.input["one_step_kmeans"],
+            pca_fitted=self.input["pca_fitted"],
+            kmeans_init_centers=self.input["kmeans_init_centers"],
         )
         labels = seg.perform_clustering(image)
         return labels
@@ -93,14 +93,23 @@ class pySTEMTEMMETAJob(TemplateJob):
         self.status.finished = True
 
 
-def plot_array(imgdata, pixelsize=1., pixelunit="", scale_bar=True,
-               show_fig=True, width=15, dpi=None,
-               sb_settings={"location": 'lower right',
-                            "color": 'k',
-                            "length_fraction": 0.15,
-                            "font_properties": {"size": 12}},
-               imshow_kwargs={"cmap": "Greys_r"}):
-    '''
+def plot_array(
+    imgdata,
+    pixelsize=1.0,
+    pixelunit="",
+    scale_bar=True,
+    show_fig=True,
+    width=15,
+    dpi=None,
+    sb_settings={
+        "location": "lower right",
+        "color": "k",
+        "length_fraction": 0.15,
+        "font_properties": {"size": 12},
+    },
+    imshow_kwargs={"cmap": "Greys_r"},
+):
+    """
     Plot a 2D numpy array as an image.
     A scale-bar can be included.
     Parameters
@@ -132,20 +141,20 @@ def plot_array(imgdata, pixelsize=1., pixelunit="", scale_bar=True,
     -------
     ax : matplotlib Axis object
     im : the image plot object
-    '''
+    """
     # initialize the figure and axes objects
     if not show_fig:
         plt.ioff()
     if dpi is not None:
-        fig = plt.figure(frameon=False,
-                         figsize=(imgdata.shape[1]/dpi, imgdata.shape[0]/dpi))
+        fig = plt.figure(
+            frameon=False, figsize=(imgdata.shape[1] / dpi, imgdata.shape[0] / dpi)
+        )
     else:
         # change cm units into inches
-        width = width*0.3937008
-        height = width/imgdata.shape[1]*imgdata.shape[0]
-        fig = plt.figure(frameon=False,
-                         figsize=(width, height))
-    ax = plt.Axes(fig, [0., 0., 1., 1.])
+        width = width * 0.3937008
+        height = width / imgdata.shape[1] * imgdata.shape[0]
+        fig = plt.figure(frameon=False, figsize=(width, height))
+    ax = plt.Axes(fig, [0.0, 0.0, 1.0, 1.0])
     ax.set_axis_off()
     fig.add_axes(ax)
     # plot the figure on the axes
@@ -169,6 +178,7 @@ def plot_image(img, **kwargs):
     """
     Wrapper for plot_array using a GeneralImage object directly
     """
-    ax, im = plot_array(img.data, pixelsize=img.pixelsize,
-                        pixelunit=img.pixelunit, **kwargs)
+    ax, im = plot_array(
+        img.data, pixelsize=img.pixelsize, pixelunit=img.pixelunit, **kwargs
+    )
     return ax, im

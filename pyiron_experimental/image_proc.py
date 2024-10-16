@@ -11,8 +11,20 @@ class LineSelector(plt_wid._SelectorWidget):
     For the cursor to remain responsive you must keep a reference to it.
     """
 
-    def __init__(self, ax, onselect, useblit=False, button=None, maxdist=10, marker_props=None,
-                 state_modifier_keys=None, interactive=False, plot_props=None, x=None, y=None):
+    def __init__(
+        self,
+        ax,
+        onselect,
+        useblit=False,
+        button=None,
+        maxdist=10,
+        marker_props=None,
+        state_modifier_keys=None,
+        interactive=False,
+        plot_props=None,
+        x=None,
+        y=None,
+    ):
         r"""
         Parameters
         ----------
@@ -64,8 +76,13 @@ class LineSelector(plt_wid._SelectorWidget):
 
             "square" and "center" can be combined.
         """
-        super().__init__(ax, onselect, useblit=useblit, button=button,
-                         state_modifier_keys=state_modifier_keys)
+        super().__init__(
+            ax,
+            onselect,
+            useblit=useblit,
+            button=button,
+            state_modifier_keys=state_modifier_keys,
+        )
         self.interactive = interactive
 
         self._init_to_draw(plot_props)
@@ -73,27 +90,34 @@ class LineSelector(plt_wid._SelectorWidget):
         self.maxdist = maxdist
 
         if marker_props is None:
-            marker_props = dict(markeredgecolor='r')
+            marker_props = dict(markeredgecolor="r")
         x = [xi for xi in x] if x is not None else [0, 0]
         y = [yi for yi in y] if y is not None else [0, 0]
         self._extents = x + y
 
-        self._corner_order = ['I', 'E']  # initial and end point
-        self._corner_handles = plt_wid.ToolHandles(self.ax, x, y, marker_props=marker_props,
-                                                   useblit=self.useblit)
+        self._corner_order = ["I", "E"]  # initial and end point
+        self._corner_handles = plt_wid.ToolHandles(
+            self.ax, x, y, marker_props=marker_props, useblit=self.useblit
+        )
 
         xc, yc = self.center
-        self._center_handle = plt_wid.ToolHandles(self.ax, [xc], [yc], marker='s',
-                                                  marker_props=marker_props,
-                                                  useblit=self.useblit)
+        self._center_handle = plt_wid.ToolHandles(
+            self.ax,
+            [xc],
+            [yc],
+            marker="s",
+            marker_props=marker_props,
+            useblit=self.useblit,
+        )
 
         self.active_handle = None
 
         self._selection_artist = self.to_draw
-        self._handles_artists = self._center_handle.artists + self._corner_handles.artists
+        self._handles_artists = (
+            self._center_handle.artists + self._corner_handles.artists
+        )
 
         self.visible = True
-
 
         if not self.interactive:
             self._handles_artists = ()
@@ -110,23 +134,21 @@ class LineSelector(plt_wid._SelectorWidget):
     def set_active(self, active):
         if active:
             for artist in self._handles_artists:
-                artist.set_markerfacecolor('red')
+                artist.set_markerfacecolor("red")
         else:
             for artist in self._handles_artists:
-                artist.set_markerfacecolor('white')
+                artist.set_markerfacecolor("white")
         super().set_active(active)
 
     def _init_to_draw(self, plot_props):
-        _plot_props = dict(color='black', linestyle='-',
-                           linewidth=2, alpha=0.5)
+        _plot_props = dict(color="black", linestyle="-", linewidth=2, alpha=0.5)
 
         if plot_props is not None:
             _plot_props.update(plot_props)
 
-        _plot_props['animated'] = self.useblit
+        _plot_props["animated"] = self.useblit
         self.plot_props = _plot_props
-        self.to_draw = plt.Line2D([0, 0], [0, 0], visible=False,
-                                  **self.plot_props)
+        self.to_draw = plt.Line2D([0, 0], [0, 0], visible=False, **self.plot_props)
         self.ax.add_line(self.to_draw)
 
     def _press(self, event):
@@ -159,13 +181,13 @@ class LineSelector(plt_wid._SelectorWidget):
         c_idx, c_dist = self._corner_handles.closest(event.x, event.y)
         _, m_dist = self._center_handle.closest(event.x, event.y)
 
-        if 'move' in self.state:
-            self.active_handle = 'C'
+        if "move" in self.state:
+            self.active_handle = "C"
             self._extents_on_press = self.extents
 
         # Set active handle as closest handle, if mouse click is close enough.
         elif m_dist < self.maxdist * 2:
-            self.active_handle = 'C'
+            self.active_handle = "C"
         elif c_dist > self.maxdist:
             self.active_handle = None
             return
@@ -175,7 +197,7 @@ class LineSelector(plt_wid._SelectorWidget):
         # Save coordinates of rectangle at the start of handle movement.
         x1, x2, y1, y2 = self.extents
         # Switch variables so that only x2 and/or y2 are updated on move.
-        if self.active_handle == 'I':
+        if self.active_handle == "I":
             x1, x2 = x2, event.xdata
             y1, y2 = y2, event.ydata
 
@@ -191,14 +213,18 @@ class LineSelector(plt_wid._SelectorWidget):
         self._extents = extents
         self.draw_shape(extents)
         # Update displayed handles
-        self._corner_handles.set_data([extents[0], extents[1]], y=[extents[2], extents[3]])
+        self._corner_handles.set_data(
+            [extents[0], extents[1]], y=[extents[2], extents[3]]
+        )
         self._center_handle.set_data(*self.center)
         self.set_visible(self.visible)
         self.update()
 
     @property
     def center(self):
-        return (self.extents[0] + self.extents[1]) / 2., (self.extents[2] + self.extents[3]) / 2.
+        return (self.extents[0] + self.extents[1]) / 2.0, (
+            self.extents[2] + self.extents[3]
+        ) / 2.0
 
     def _release(self, event):
         """Button release event handler."""
@@ -226,14 +252,15 @@ class LineSelector(plt_wid._SelectorWidget):
     def _onmove(self, event):
         """Cursor move event handler."""
         # resize an existing shape
-        if self.active_handle and self.active_handle != 'C':
+        if self.active_handle and self.active_handle != "C":
             x1, x2, y1, y2 = self._extents_on_press
             x2 = event.xdata
             y2 = event.ydata
 
         # move existing shape
-        elif (('move' in self.state or self.active_handle == 'C')
-              and self._extents_on_press is not None):
+        elif (
+            "move" in self.state or self.active_handle == "C"
+        ) and self._extents_on_press is not None:
             x1, x2, y1, y2 = self._extents_on_press
             dx = event.xdata - self.eventpress.xdata
             dy = event.ydata - self.eventpress.ydata
@@ -246,11 +273,11 @@ class LineSelector(plt_wid._SelectorWidget):
         else:
             center = [self.eventpress.xdata, self.eventpress.ydata]
             center_pix = [self.eventpress.x, self.eventpress.y]
-            dx = (event.xdata - center[0]) / 2.
-            dy = (event.ydata - center[1]) / 2.
+            dx = (event.xdata - center[0]) / 2.0
+            dy = (event.ydata - center[1]) / 2.0
 
             # square shape
-            if 'square' in self.state:
+            if "square" in self.state:
                 dx_pix = abs(event.x - center_pix[0])
                 dy_pix = abs(event.y - center_pix[1])
                 if not dx_pix:
@@ -262,7 +289,7 @@ class LineSelector(plt_wid._SelectorWidget):
                     dy *= maxd / (abs(dy_pix) + 1e-6)
 
             # from center
-            if 'center' in self.state:
+            if "center" in self.state:
                 dx *= 2
                 dy *= 2
 
@@ -271,8 +298,12 @@ class LineSelector(plt_wid._SelectorWidget):
                 center[0] += dx
                 center[1] += dy
 
-            x1, x2, y1, y2 = (center[0] - dx, center[0] + dx,
-                              center[1] - dy, center[1] + dy)
+            x1, x2, y1, y2 = (
+                center[0] - dx,
+                center[0] + dx,
+                center[1] - dy,
+                center[1] + dy,
+            )
 
         self.extents = x1, x2, y1, y2
 
@@ -295,14 +326,12 @@ class RectangleSelector(LineSelector):
     """
 
     def _init_to_draw(self, plot_props):
-        rectprops = dict(facecolor='red', edgecolor='black',
-                         alpha=0.2, fill=True)
+        rectprops = dict(facecolor="red", edgecolor="black", alpha=0.2, fill=True)
         if plot_props is not None:
             rectprops.update(plot_props)
-        rectprops['animated'] = self.useblit
+        rectprops["animated"] = self.useblit
         self.plot_props = rectprops
-        self.to_draw = plt.Rectangle((0, 0), 0, 1, visible=False,
-                                     **self.plot_props)
+        self.to_draw = plt.Rectangle((0, 0), 0, 1, visible=False, **self.plot_props)
         self.ax.add_patch(self.to_draw)
 
     def draw_shape(self, extents):
@@ -331,16 +360,17 @@ class EllipsoidSelector(LineSelector):
     constructed by taking the same height and the width of that rectangle, i.e. no rotated ellipsoid.
     For the cursor to remain responsive you must keep a reference to it.
     """
+
     def _init_to_draw(self, plot_props):
-        ellipsoid_props = dict(facecolor='red', edgecolor='black',
-                               alpha=0.2, fill=True)
+        ellipsoid_props = dict(facecolor="red", edgecolor="black", alpha=0.2, fill=True)
 
         if plot_props is not None:
             ellipsoid_props.update(plot_props)
-        ellipsoid_props['animated'] = self.useblit
+        ellipsoid_props["animated"] = self.useblit
         self.plot_props = ellipsoid_props
-        self.to_draw = mpl.patches.Ellipse((0, 0), 0, 0, visible=False,
-                                           **self.plot_props)
+        self.to_draw = mpl.patches.Ellipse(
+            (0, 0), 0, 0, visible=False, **self.plot_props
+        )
         # self.to_draw = plt.Circle((0, 0), 0, visible=False,
         #                          **self.rectprops)
         self.ax.add_patch(self.to_draw)
@@ -352,12 +382,12 @@ class EllipsoidSelector(LineSelector):
         # ylim = sorted(self.ax.get_ylim())
 
         self.to_draw.set_center([x0, y0])
-        self.to_draw.set_width(2*(x1-x0))
-        self.to_draw.set_height(2*(y1-y0))
+        self.to_draw.set_width(2 * (x1 - x0))
+        self.to_draw.set_height(2 * (y1 - y0))
 
     def _onmove(self, event):
-        if self.active_handle == 'I':
-            self.active_handle = 'C'
+        if self.active_handle == "I":
+            self.active_handle = "C"
             x1, x2, y1, y2 = self._extents_on_press
             self._extents_on_press = x2, x1, y2, y1
         super()._onmove(event)
@@ -370,17 +400,21 @@ class CircleSelector(LineSelector):
     The selection is based on a single line which is interpret as the radius of the circle.
     For the cursor to remain responsive you must keep a reference to it.
     """
+
     def _init_to_draw(self, plot_props):
-        circle_props = dict(facecolor='red', edgecolor='black',
-                         alpha=0.2, fill=True)
+        circle_props = dict(facecolor="red", edgecolor="black", alpha=0.2, fill=True)
         if plot_props is not None:
             circle_props.update(plot_props)
 
-        circle_props['animated'] = self.useblit
+        circle_props["animated"] = self.useblit
         self.plot_props = circle_props
-        self.to_draw = plt.Circle((0, 0), 0, visible=False,
-                                  transform=self.ax.figure.dpi_scale_trans,  # positions transformed to inch
-                                  **self.plot_props)
+        self.to_draw = plt.Circle(
+            (0, 0),
+            0,
+            visible=False,
+            transform=self.ax.figure.dpi_scale_trans,  # positions transformed to inch
+            **self.plot_props
+        )
         self.ax.add_patch(self.to_draw)
 
     def draw_shape(self, extents):
@@ -396,8 +430,8 @@ class CircleSelector(LineSelector):
         self.to_draw.radius = radius_in_in
 
     def _onmove(self, event):
-        if self.active_handle == 'I':
-            self.active_handle = 'C'
+        if self.active_handle == "I":
+            self.active_handle = "C"
             x1, x2, y1, y2 = self._extents_on_press
             self._extents_on_press = x2, x1, y2, y1
         super()._onmove(event)
@@ -419,6 +453,7 @@ class ROISelector:
         select_line: select a line ROI on the axis.
         select_rectangle: select a rectangular ROI on the axis.
     """
+
     def __init__(self, ax):
         self.ax = ax
         self._selector = None
@@ -454,24 +489,52 @@ class ROISelector:
 
     def select_circle(self, circle_properties=None, x=None, y=None):
         self.clear_select()
-        self._selector = CircleSelector(self.ax, self._on_select, useblit=self.useblit,
-                                        button=[1, 3], interactive=True, plot_props=circle_properties,
-                                        x=x, y=y)
+        self._selector = CircleSelector(
+            self.ax,
+            self._on_select,
+            useblit=self.useblit,
+            button=[1, 3],
+            interactive=True,
+            plot_props=circle_properties,
+            x=x,
+            y=y,
+        )
 
     def select_ellipse(self, ellipsoid_properties=None, x=None, y=None):
         self.clear_select()
-        self._selector = EllipsoidSelector(self.ax, self._on_select, useblit=self.useblit,
-                                           button=[1, 3], interactive=True, plot_props=ellipsoid_properties,
-                                           x=x, y=y)
+        self._selector = EllipsoidSelector(
+            self.ax,
+            self._on_select,
+            useblit=self.useblit,
+            button=[1, 3],
+            interactive=True,
+            plot_props=ellipsoid_properties,
+            x=x,
+            y=y,
+        )
 
     def select_rectangle(self, rectangle_properties=None, x=None, y=None):
         self.clear_select()
-        self._selector = RectangleSelector(self.ax, self._on_select, useblit=self.useblit,
-                                           button=[1, 3], interactive=True, plot_props=rectangle_properties,
-                                           x=x, y=y)
+        self._selector = RectangleSelector(
+            self.ax,
+            self._on_select,
+            useblit=self.useblit,
+            button=[1, 3],
+            interactive=True,
+            plot_props=rectangle_properties,
+            x=x,
+            y=y,
+        )
 
     def select_line(self, line_properties=None, x=None, y=None):
         self.clear_select()
-        self._selector = LineSelector(self.ax, self._on_select, useblit=self.useblit,
-                                      button=[1, 3], interactive=True, plot_props=line_properties,
-                                      x=x, y=y)
+        self._selector = LineSelector(
+            self.ax,
+            self._on_select,
+            useblit=self.useblit,
+            button=[1, 3],
+            interactive=True,
+            plot_props=line_properties,
+            x=x,
+            y=y,
+        )
