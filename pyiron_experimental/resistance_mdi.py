@@ -32,13 +32,6 @@ class ResistanceGP(PythonTemplateJob):
     def _check_if_input_should_be_written(self):
         return False
 
-    # Change validity of jobs after the fact
-    # def validity(self):
-
-    # def postprocess_xrd(self):
-    #     cs = crystal_structure_analysis(self.output['xrd_measurement'])
-    #     self.output['crystal_structure'] = cs
-
     def run_static(self):
         self.device = Resistance(
             self.input.df,  # todo(markus) change to DataFrame
@@ -59,48 +52,36 @@ class ResistanceGP(PythonTemplateJob):
 
         model.predict(X)
 
-        max_cov, index_max_cov = model.get_max_covariance()
-
-        print("Max covariance and index = {} [{}]".format(max_cov, index_max_cov))
-
-        X_tmp, y_tmp = self.device.get_measurement(
-            indices=[index_max_cov],
-            target_property=self.input.target[0]
-        )
-
-        model.update_Xy(X_tmp, y_tmp)
-        model.predict(X)
+        pred = model.mu
+        pred_collection = [pred]
 
         max_cov, index_max_cov = model.get_max_covariance()
 
-        # think about: run_interactive, for
         for i in range(self.input.max_gp_iterations):
-            # while(max_cov > VAL):
-
-            print("Max covariance and index = {} [{}]".format(max_cov, index_max_cov))
+            # Possible: while(max_cov > VAL):
 
             X_tmp, y_tmp = self.device.get_measurement(
-                indices=[index_max_cov], target_property="Resistance"
+                indices=[index_max_cov], target_property=self.input.target[0]
             )
-            print("New measurement shape = {}".format(X_tmp.shape))
+
             model.update_Xy(X_tmp, y_tmp)
 
             prediction = model.predict(X)
+            pred_collection.append(prediction)
 
             max_cov, index_max_cov = model.get_max_covariance()
-            print("IDX max cov = {}".format(index_max_cov))
 
-        # ideal: dataframe
-        self.output["features"] = list(
-            self.device.features
-        )  # needs to work without list
+        self.output["features"] = list(self.device.features)
         self.output["element_concentration"] = X_tmp
         self.output["resistance_measured"] = y_tmp
         self.output["measurement_indices"] = self.device.measured_ids
         self.output["resistance_prediction"] = np.exp(model.mu)
         self.output["covariance"] = model.cov
         self.output["prediction"] = prediction
-        # self.postprocess_xrd()
+        # for Niklas:
+        self.output["prediction_collection"] = list(pred_collection)
+        print("type(pred_collection)", type(pred_collection))
+        print("type(pred_collection)", type(pred_collection))
 
         # self.output['resistance_model'] = model.
         self.to_hdf()
