@@ -39,8 +39,10 @@ job_measure.run()
 
 print("DEVICE, raw data = \n", job_measure.device.df)
 
+print("Outside ", job_measure.output.mu_vs_iterations)
 
-print(job_measure.output["measurement_indices"])
+# print(job_measure.output["measurement_indices"])
+# print(job_measure.output["resistance_prediction"])
 
 # job_postproc = p.create_job(mdi_suite.xrd_postproc, "job_postproc")
 # job_postproc.input.xrd_measurement = job_measure

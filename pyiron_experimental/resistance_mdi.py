@@ -28,6 +28,7 @@ class ResistanceGP(PythonTemplateJob):
         self.input["df"] = None
         self.input["max_gp_iterations"] = 10
         self.input["element_column_ids"] = None
+        self.input["debug"] = False
 
     def _check_if_input_should_be_written(self):
         return False
@@ -50,10 +51,11 @@ class ResistanceGP(PythonTemplateJob):
         # Get all elemental compositions as variables for prediction
         X = self.device.get_features()
 
-        model.predict(X)
+        mu, cov = model.predict(X)
 
-        pred = model.mu
-        pred_collection = [pred]
+        if self.input.debug:
+            mu_collection = [mu]
+            cov_collection = [cov]
 
         max_cov, index_max_cov = model.get_max_covariance()
 
@@ -66,23 +68,25 @@ class ResistanceGP(PythonTemplateJob):
 
             model.update_Xy(X_tmp, y_tmp)
 
-            prediction = model.predict(X)
-            pred_collection.append(prediction)
+            _, _ = model.predict(X)
+
+            if self.input.debug:
+                mu_collection.append(model.mu)
+                cov_collection.append(model.cov)
 
             max_cov, index_max_cov = model.get_max_covariance()
+
+        print(mu_collection)
 
         self.output["features"] = list(self.device.features)
         self.output["element_concentration"] = X_tmp
         self.output["resistance_measured"] = y_tmp
         self.output["measurement_indices"] = self.device.measured_ids
-        self.output["resistance_prediction"] = np.exp(model.mu)
+        self.output["resistance_prediction"] = model.mu
         self.output["covariance"] = model.cov
-        self.output["prediction"] = prediction
-        # for Niklas:
-        self.output["prediction_collection"] = list(pred_collection)
-        print("type(pred_collection)", type(pred_collection))
-        print("type(pred_collection)", type(pred_collection))
+        if self.input.debug:
+            self.output["mu_vs_iterations"] = np.asarray(mu_collection)
+            self.output["cov_vs_iterations"] = np.asarray(cov_collection)
 
-        # self.output['resistance_model'] = model.
         self.to_hdf()
         self.status.finished = True
