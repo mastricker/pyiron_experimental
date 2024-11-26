@@ -23,7 +23,6 @@ max_iter = 100
 
 params = {"df": data, "features": features, "target": target, "max_iter": max_iter}
 
-# job_measure.input.sample_file = "../notebooks/Ir-Pd-Pt-Rh-Ru_dataset.csv"
 job_measure.input.df = data
 job_measure.input.features = features
 job_measure.input.max_gp_iterations = max_iter
@@ -31,8 +30,6 @@ job_measure.input.target = target
 
 # Output raw data
 
-# define the columns for elemental concentrations
-#job_measure.input.element_column_ids = [3, -1]
 print(job_measure.input)
 
 job_measure.run()

@@ -37,12 +37,12 @@ class ResistanceGP(PythonTemplateJob):
         self.device = Resistance(
             self.input.df,  # todo(markus) change to DataFrame
             features=self.input.features,
-            target=self.input.target[0]
+            target=self.input.target[0],
         )
 
         X0, y0 = self.device.get_initial_measurement(
             indices=self.input.initialization_indices,
-            target_property=self.input.target[0]
+            target_property=self.input.target[0],
         )
 
         # Initialize Gaussian process
@@ -75,8 +75,6 @@ class ResistanceGP(PythonTemplateJob):
                 cov_collection.append(model.cov)
 
             max_cov, index_max_cov = model.get_max_covariance()
-
-        print(mu_collection)
 
         self.output["features"] = list(self.device.features)
         self.output["element_concentration"] = X_tmp
